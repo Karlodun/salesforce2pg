@@ -1,0 +1,14 @@
+[Unit]
+Description=salesforce data sync timer
+RefuseManualStart=no
+RefuseManualStop=no
+
+[Timer]
+#OnCalendar=*-*-* 03:00:00
+#RandomizedDelaySec=72
+Persistent=true
+OnUnitActiveSec=5 minutes
+Unit=salesforce_sync.service
+
+[Install]
+WantedBy=timers.target
