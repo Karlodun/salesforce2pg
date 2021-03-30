@@ -1,0 +1,9 @@
+[Unit]
+Description=salesforce data sync service
+RefuseManualStart=no
+RefuseManualStop=no
+
+[Service]
+Type=simple
+#User=pg_ingest
+ExecStart=/etc/var/salesforce_sync/sync.py
