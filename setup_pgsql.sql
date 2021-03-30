@@ -1,6 +1,7 @@
 -- the code is pretty self explanatory. Start the reverse engineering with the view and functions at the end of the file
 CREATE ROLE salesforce_sync;
 CREATE SCHEMA AUTHORIZATION salesforce_sync;
+SET ROLE salesforce_sync;
 -- grant all required rights on all required schemas!!!
 --DROP TABLE IF EXISTS salesforce_sync.sf_instance;
 --DROP TABLE IF EXISTS salesforce_sync.api_column;
@@ -84,7 +85,7 @@ SELECT 'DROP TABLE IF EXISTS '||target_table||';'||chr(10)
 LOOP
     EXECUTE code_snippet.sql_runner;
 END LOOP;
-UPDATE ciq.api_table SET rebuild=FALSE WHERE rebuild;
+UPDATE salesforce_sync.api_table SET rebuild=FALSE WHERE rebuild;
 END;
 $procedure$
 ;
@@ -177,4 +178,4 @@ NATURAL JOIN salesforce_sync.sf_instance
 WHERE enabled
 GROUP BY source_table;
 
-GRANT ALL ON ALL TABLES IN SCHEMA salesforce_sync TO salesforce_sync; 
+RESET ROLE;
