@@ -51,3 +51,4 @@ NATURAL JOIN ciq.api_column
 WHERE enabled
 GROUP BY source_table
 
+GRANT SELECT, INSERT, DELETE ON ciq.api_column, ciq.api_table, ciq.salesforce_instances TO salesforce_pipe;
