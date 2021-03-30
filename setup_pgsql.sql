@@ -27,8 +27,8 @@ CREATE TABLE salesforce_sync.api_table(sf_instance varchar REFERENCES salesforce
     , update_frequency INTERVAL DEFAULT '5 minutes'
 );
 
-CREATE TABLE salesforce_sync.api_column (
-    source_table varchar REFERENCES ciq.api_table(source_table)
+CREATE TABLE salesforce_sync.api_column (sf_instance varchar REFERENCES salesforce_sync.sf_instance(sf_instance)
+    , source_table varchar REFERENCES ciq.api_table(source_table)
     , source_column varchar
     , target_column varchar
     , column_order int DEFAULT -1
