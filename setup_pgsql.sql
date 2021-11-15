@@ -1,5 +1,5 @@
 -- the code is pretty self explanatory. Start the reverse engineering with the view and functions at the end of the file
-CREATE ROLE salesforce_sync;
+CREATE ROLE salesforce_sync; -- grant this role to the connecting user
 CREATE SCHEMA AUTHORIZATION salesforce_sync;
 SET ROLE salesforce_sync;
 -- grant all required rights on all required schemas!!!
@@ -7,15 +7,18 @@ SET ROLE salesforce_sync;
 --DROP TABLE IF EXISTS salesforce_sync.api_column;
 --DROP TABLE IF EXISTS salesforce_sync.api_table;
 
-CREATE TABLE salesforce_sync.sf_instance (sf_instance varchar PRIMARY KEY
+CREATE TABLE salesforce_sync.sf_instance (
+    sf_instance varchar PRIMARY KEY
     , organization_id varchar NOT NULL
     , username varchar NOT NULL
     , pwd varchar NOT NULL
     , session_id varchar NOT NULL DEFAULT ''
     , security_token varchar NOT NULL DEFAULT ''
+    , notes_instance varchar NULL
     )
 
-CREATE TABLE salesforce_sync.api_table(sf_instance varchar REFERENCES salesforce_sync.sf_instance(sf_instance)
+CREATE TABLE salesforce_sync.api_table(
+    sf_instance varchar REFERENCES salesforce_sync.sf_instance(sf_instance)
     , source_table varchar PRIMARY KEY
     , target_table varchar
     , last_modified_column varchar
@@ -25,14 +28,18 @@ CREATE TABLE salesforce_sync.api_table(sf_instance varchar REFERENCES salesforce
     , enabled boolean DEFAULT TRUE
     , rebuild boolean DEFAULT FALSE
     , update_frequency INTERVAL DEFAULT '5 minutes'
+    , notes_table varchar NULL
 );
 
-CREATE TABLE salesforce_sync.api_column (sf_instance varchar REFERENCES salesforce_sync.sf_instance(sf_instance)
+CREATE TABLE salesforce_sync.api_column (
+    sf_instance varchar REFERENCES salesforce_sync.sf_instance(sf_instance)
     , source_table varchar REFERENCES ciq.api_table(source_table)
     , source_column varchar
     , target_column varchar
     , column_order int DEFAULT -1
     , enabled boolean DEFAULT TRUE
+    , notes_column varchar NULL,
+	, create_index bool NULL,
     , PRIMARY KEY (source_table, source_column)
 );
 
@@ -50,7 +57,6 @@ runner_sql := (SELECT 'SELECT max('||target_column||') FROM '||target_table||';'
         WHERE source_column=apit.last_modified_column
         AND source_table=src_table
     );
---INSERT INTO ciq.api_debug VALUES (runner_sql);
 EXECUTE runner_sql INTO last_update;
 END;
 $function$
@@ -90,7 +96,7 @@ END;
 $procedure$
 ;
 
-CALL salesforce_sync.rebuild_target();
+-- CALL salesforce_sync.rebuild_target();
 
 CREATE OR REPLACE PROCEDURE salesforce_sync.rebuild_target(src_table character varying)
 -- rebuilds specific table
@@ -163,9 +169,12 @@ SELECT sf_instance, source_table
 , concat('SELECT '||string_agg(source_column, ', ')||chr(10)
     ||'FROM '||source_table||chr(10)
     ||'WHERE '||last_modified_column||'>'||to_char(
+        -- we let the sync script overlap, in case not all changes propagated during the time when the sync synchronised last time.
+        -- however this makes the process sync same data multiple times, until new changes arrive.
+        -- the impact is minimal
             COALESCE(salesforce_sync.last_update(api_table.source_table), '1900-01-01')
                 -update_frequency::interval
-                -INTERVAL '5 minutes'
+                -INTERVAL '5 minutes' -- the overlap, hardcoded on purpose
                 , 'YYYY-MM-DD"T"HH24:MI:SS"Z"'
         )||chr(10)
 --    , 'OR ISNULL('||last_modified_column||') '||chr(10)
