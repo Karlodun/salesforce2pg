@@ -5,7 +5,7 @@ RefuseManualStop=no
 
 [Service]
 Type=simple
-#User=salesforce_sync
+User=salesforce_sync
 ExecStart=~salesforce_sync/sync.py
 
 [Install]
