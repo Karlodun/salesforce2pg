@@ -5,5 +5,9 @@ RefuseManualStop=no
 
 [Service]
 Type=simple
-#User=pg_ingest
-ExecStart=/etc/var/salesforce_sync/sync.py
+#User=salesforce_sync
+ExecStart=~salesforce_sync/sync.py
+
+[Install]
+#WantedBy=multi-user.target
+WantedBy=timers.target
