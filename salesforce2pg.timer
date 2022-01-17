@@ -1,5 +1,5 @@
 [Unit]
-Description=salesforce data sync timer
+Description=salesforce2pg data sync timer
 RefuseManualStart=no
 RefuseManualStop=no
 
