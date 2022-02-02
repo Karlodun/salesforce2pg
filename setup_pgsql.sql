@@ -29,9 +29,9 @@ CREATE TABLE salesforce2pg.api_table(
     , rebuild boolean NOT NULL DEFAULT FALSE
     , update_frequency INTERVAL DEFAULT '5 minutes'
     , filter_notes varchar NULL
-	, api_status_message varchar NULL
-	, author varchar NULL DEFAULT SESSION_USER
-	, author_notes varchar NULL
+    , status varchar NULL
+    , author varchar NULL DEFAULT SESSION_USER
+    , author_notes varchar NULL
 );
 
 CREATE TABLE salesforce2pg.api_column (
@@ -42,14 +42,16 @@ CREATE TABLE salesforce2pg.api_column (
     , column_order int DEFAULT -1
     , enabled boolean DEFAULT TRUE
     , notes_column varchar NULL,
-	, create_index bool NULL,
+    , create_index bool NULL,
     , PRIMARY KEY (source_table, source_column)
 );
 
-CREATE OR REPLACE FUNCTION salesforce2pg.last_update(src_table character varying, OUT last_update timestamp without time zone)
+-- according to tests this functions requires security definer right now which is a security risk
+-- It needs to be improved to be able to run without the security definer, proper tests are needed.
+CREATE OR REPLACE FUNCTION salesforce2pg.last_update(src_table varchar, OUT last_update timestamp without time zone)
  RETURNS timestamp without time zone
  LANGUAGE plpgsql
- SECURITY DEFINER
+ SECURITY DEFINER -- try to get rid of it!
 AS $function$
 declare 
  runner_sql TEXT;
@@ -68,7 +70,7 @@ $function$
 CREATE OR REPLACE PROCEDURE salesforce2pg.rebuild_target()
 -- rebuilds all tables at once;
  LANGUAGE plpgsql
- SECURITY DEFINER
+ SECURITY DEFINER -- try to get rid of it!
 AS $procedure$
 declare 
  code_snippet RECORD;
@@ -104,7 +106,7 @@ $procedure$
 CREATE OR REPLACE PROCEDURE salesforce2pg.rebuild_target(src_table character varying)
 -- rebuilds specific table
  LANGUAGE plpgsql
- SECURITY DEFINER
+ SECURITY DEFINER -- try to get rid of it!
 AS $procedure$
 declare 
  runner_sql TEXT;
@@ -135,7 +137,7 @@ $procedure$
 
 CREATE OR REPLACE PROCEDURE salesforce2pg.upsert(src_table character varying, jsontext text)
  LANGUAGE plpgsql
- SECURITY DEFINER
+ SECURITY DEFINER -- try to get rid of it!
 AS $procedure$
 declare 
  runner_sql TEXT;
