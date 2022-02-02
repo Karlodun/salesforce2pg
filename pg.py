@@ -13,18 +13,29 @@ con = psycopg2.connect(
 
 cur=con.cursor(cursor_factory = psycopg2.extras.DictCursor)
 
+
 def rebuild():
     cur.execute("CALL salesforce_sync.rebuild_target()")
     con.commit()
 
+    
 def list_sf_instances():
     cur.execute('SELECT * FROM salesforce_sync.sf_instance')
     return cur.fetchall()
+
 
 def list_src_tables(instance):
     cur.execute(f"SELECT source_table, source_query FROM salesforce_sync.api_query WHERE sf_instance='{instance}'")
     return cur.fetchall()
 
+
 def upsert(src_table,json_records):
     cur.execute(f"CALL salesforce_sync.upsert('{src_table}','{json_records}')")
     con.commit()
+
+    
+def update_table_api_status(instance, table, status):
+    cur.execute(f"UPDATE salesforce2pg.api_table SET status='{status}' WHERE sf_instance='{instance}' AND source_table='{table}'")
+    con.commit()
+
+
