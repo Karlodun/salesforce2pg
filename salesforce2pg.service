@@ -6,7 +6,7 @@ RefuseManualStop=no
 [Service]
 Type=simple
 User=salesforce2pg
-ExecStart=~salesforce2pg/sync.py
+ExecStart=/var/lib/salesforce2pg/sync.py
 
 [Install]
 #WantedBy=multi-user.target
