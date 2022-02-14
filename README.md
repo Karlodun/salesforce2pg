@@ -18,7 +18,7 @@ Setup:
 
 # copy Files
 
-copy all files to directory, which is configured in systemd service. predefined directory is: /etc/var/salesforce_sync/
+copy all files to directory, which is configured in systemd service. predefined directory is: /var/lib/salesforce_sync/
 
 # SystemD Timer
 * please google for instal instructions of systemd services and timers for your distro, please fix the path in service file according to your requirements
