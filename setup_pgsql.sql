@@ -36,13 +36,13 @@ CREATE TABLE salesforce2pg.api_table(
 
 CREATE TABLE salesforce2pg.api_column (
     sf_instance varchar REFERENCES salesforce2pg.sf_instance(sf_instance)
-    , source_table varchar REFERENCES ciq.api_table(source_table)
+    , source_table varchar REFERENCES salesforce2pg.api_table(source_table)
     , source_column varchar
     , target_column varchar
     , column_order int DEFAULT -1
     , enabled boolean DEFAULT TRUE
-    , notes_column varchar NULL,
-    , create_index bool NULL,
+    , notes_column varchar NULL
+    , create_index bool NULL
     , PRIMARY KEY (source_table, source_column)
 );
 
