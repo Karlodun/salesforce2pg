@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import psycopg2, psycopg2.extras
 
-# The reccomendation is to use unix socket with trusted connection, ommiting settings like here. Uncomment if you really need!
+# The reccomendation is to use unix socket with trusted connection. Uncomment if you really need!
+# use .pgpass to store your password!
 # check official documentation if needed
 con = psycopg2.connect(
     database="postgres"     # according to your needs
-    , user="not_postgres"   # don't forget to grant salesforce_sync to this role!
-    # , host="localhost"      # enable for remote or if unix socket connection impossible 
-    # , password="123456"     # enable if you cannot setup a trusted connection
+    , user="salesforce2pg_service"   # don't forget to grant salesforce_2pg to this role!
+    # , host="localhost"      # enable for remote or if unix socket connection impossible
     # , port="5432"           
     ).cursor()
 
