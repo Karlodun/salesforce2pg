@@ -14,6 +14,7 @@ CREATE TABLE salesforce2pg.sf_instance (
     , pwd varchar NOT NULL
     , session_id varchar NOT NULL DEFAULT ''
     , security_token varchar NOT NULL DEFAULT ''
+    , enabled bool NOT NULL DEFAULT false 
     , notes_instance varchar NULL
     )
 
