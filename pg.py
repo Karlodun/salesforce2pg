@@ -9,7 +9,7 @@ con = psycopg2.connect(
     , user="salesforce2pg_service"   # don't forget to grant salesforce_2pg to this role!
     # , host="localhost"      # enable for remote or if unix socket connection impossible
     # , port="5432"           
-    ).cursor()
+    )
 
 cur=con.cursor(cursor_factory = psycopg2.extras.DictCursor)
 
