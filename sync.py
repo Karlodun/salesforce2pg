@@ -43,4 +43,4 @@ if __name__=="__main__":
 
     
 if __name__ == "sync":
-    print('here should be some driving functionality')
+    print('this part should enable the usage of all functions on import, ex for debugging purposes or manual migrations')
