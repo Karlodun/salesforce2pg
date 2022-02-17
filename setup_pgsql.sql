@@ -180,7 +180,7 @@ SELECT sf_instance, source_table
         -- the impact is minimal
             COALESCE(salesforce2pg.last_update(api_table.source_table), '1900-01-01')
                 -update_frequency::interval
-                -INTERVAL '5 minutes' -- the overlap, hardcoded on purpose
+                -INTERVAL '5 minutes' -- the overlap, hardcoded on purpose due to possible lag in salesforce
                 , 'YYYY-MM-DD"T"HH24:MI:SS"Z"'
         )||chr(10)
 --    , 'OR ISNULL('||last_modified_column||') '||chr(10)
