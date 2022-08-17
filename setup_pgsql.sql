@@ -49,10 +49,11 @@ CREATE TABLE salesforce2pg.api_column (
 
 -- according to tests this functions requires security definer right now which is a security risk
 -- It needs to be improved to be able to run without the security definer, proper tests are needed.
-CREATE OR REPLACE FUNCTION salesforce2pg.last_update(src_table varchar, OUT last_update timestamp without time zone)
+CREATE OR REPLACE FUNCTION salesforce2pg.last_update(tg_table character varying, OUT last_update timestamp without time zone)
  RETURNS timestamp without time zone
  LANGUAGE plpgsql
- SECURITY DEFINER -- try to get rid of it!
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog', 'pg_temp'
 AS $function$
 declare 
  runner_sql TEXT;
@@ -61,12 +62,14 @@ runner_sql := (SELECT 'SELECT max('||target_column||') FROM '||target_table||';'
         FROM salesforce2pg.api_table apit
         NATURAL JOIN salesforce2pg.api_column
         WHERE source_column=apit.last_modified_column
-        AND source_table=src_table
+        AND target_table=tg_table
     );
+--INSERT INTO salesforce2pg.api_debug VALUES (runner_sql);
 EXECUTE runner_sql INTO last_update;
 END;
 $function$
 ;
+
 
 CREATE OR REPLACE PROCEDURE salesforce2pg.rebuild_target()
 -- rebuilds all tables at once;
@@ -170,7 +173,7 @@ $procedure$
 
 DROP VIEW salesforce2pg.api_query;
 CREATE OR REPLACE VIEW salesforce2pg.api_query AS
-SELECT sf_instance, source_table
+SELECT sf_instance, target_table
 --, update_frequency
 , concat('SELECT '||string_agg(source_column, ', ')||chr(10)
     ||'FROM '||source_table||chr(10)
@@ -178,7 +181,7 @@ SELECT sf_instance, source_table
         -- we let the sync script overlap, in case not all changes propagated during the time when the sync synchronised last time.
         -- however this makes the process sync same data multiple times, until new changes arrive.
         -- the impact is minimal
-            COALESCE(salesforce2pg.last_update(api_table.source_table), '1900-01-01')
+            COALESCE(salesforce2pg.last_update(api_table.target_table), '1900-01-01')
                 -update_frequency::interval
                 -INTERVAL '5 minutes' -- the overlap, hardcoded on purpose due to possible lag in salesforce
                 , 'YYYY-MM-DD"T"HH24:MI:SS"Z"'
@@ -187,10 +190,13 @@ SELECT sf_instance, source_table
     , 'AND '||source_filter|| chr(10)
     , 'ORDER BY '||last_modified_column||' DESC'
     ) source_query
+    , COALESCE(salesforce2pg.last_update(api_table.target_table), '1900-01-01 00:00:00'::timestamp without time zone) AS last_modified
+    , 'SELECT Count() FROM '::text || api_table.source_table::text AS row_count
 FROM salesforce2pg.api_table
 NATURAL JOIN salesforce2pg.api_column
 NATURAL JOIN salesforce2pg.sf_instance
 WHERE enabled
-GROUP BY source_table;
+GROUP BY target_table;
+
 
 RESET ROLE;
